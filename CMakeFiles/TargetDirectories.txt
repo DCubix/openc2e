@@ -1,0 +1,6 @@
+/home/danicron/Documents/Code/openc2e/CMakeFiles/edit_cache.dir
+/home/danicron/Documents/Code/openc2e/CMakeFiles/generated.dir
+/home/danicron/Documents/Code/openc2e/CMakeFiles/docs.dir
+/home/danicron/Documents/Code/openc2e/CMakeFiles/rebuild_cache.dir
+/home/danicron/Documents/Code/openc2e/CMakeFiles/openc2e.dir
+/home/danicron/Documents/Code/openc2e/CMakeFiles/test.dir
