@@ -22,7 +22,7 @@ Intended games:
 
 * Agents (COBs) work
 * Imperfect physics
-* Creatures biochemestry
+* Creatures biochemistry
 * Sound effects
 
 ## Todo
