@@ -497,7 +497,7 @@ void c2Organ::tick() {
 		biochemticks++;
 
 		// TODO: is this the correct way to handle biotickstart?
-		//if (biochemticks < ourGene->biotickstart) return;
+		if (biochemticks < ourGene->biotickstart) return;
 		
 		ticked = true;
 
@@ -566,7 +566,7 @@ void c2eOrgan::tick() {
 		biotick -= 1.0f;
 
 		// *** energy consumption
-		// chem 35 = ATP, chem 36 = ADP (TODO: fix hardcoding)
+		//chem 35 = ATP, chem 36 = ADP; //(TODO: fix hardcoding)
 		float atplevel = parent->getChemical(35);
 		bool hadenergy = false;
 		if (atplevel >= energycost) {

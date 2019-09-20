@@ -623,7 +623,7 @@ void QtOpenc2e::tick() {
 		// TODO: emit creatureTicked() if necessary
 
 		emit ticked();
-		emit creatureTicked();
+		//emit creatureTicked();
 	}
 
 	if (viewport->needsRender()) {
