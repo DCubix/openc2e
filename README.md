@@ -5,6 +5,8 @@ run **all** the games in the _Creatures_ series.
 
 Original development ceased back in 2010.
 
+Revived in 2019
+
 # Games
 
 Intended games:
