@@ -74,6 +74,8 @@ Engine::Engine() {
 
 	addPossibleBackend("null", shared_ptr<Backend>(new NullBackend()));
 	addPossibleAudioBackend("null", shared_ptr<AudioBackend>(new NullAudioBackend()));
+
+	std::cout << "Engine Initiated" << std::endl;
 }
 
 Engine::~Engine() {
@@ -175,7 +177,8 @@ bool Engine::needsUpdate() {
 	return fastticks || !backend->ticks() || (backend->ticks() > (tickdata + world.ticktime));
 }
 
-unsigned int Engine::msUntilTick() {
+unsigned int Engine::msUntilTick() 
+{
 	if (fastticks) return 0;
 	if (world.paused) return world.ticktime; // TODO: correct?
 
@@ -183,9 +186,11 @@ unsigned int Engine::msUntilTick() {
 	return (ival < 0) ? 0 : ival;
 }
 
-void Engine::drawWorld() {
+void Engine::drawWorld() 
+{
 	// draw the world
-	if (dorendering || refreshdisplay) {
+	if (dorendering || refreshdisplay) 
+	{
 		refreshdisplay = false;	
 
 		if (backend->selfRender()) {

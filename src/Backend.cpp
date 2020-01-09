@@ -8,7 +8,8 @@ int Backend::run(int argc, char **argv) {
 	// do a first-pass draw of the world. TODO: correct?
 	world.drawWorld();
 
-	while (!engine.done) {
+	while (!engine.done) 
+	{
 		if (!engine.tick()) // if the engine didn't need an update..
 			delay(10); // .. delay for a short while
 	} // main loop

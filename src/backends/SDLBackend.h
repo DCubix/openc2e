@@ -24,18 +24,22 @@
 #include <SDL_net.h>
 #include "Backend.h"
 
-class SDLSurface : public Surface {
+class SDLSurface : public Surface
+{
 	friend class SDLBackend;
 
 protected:
 	class SDLBackend *parent;
-	SDL_Surface *surface;
+	SDL_Surface *surface = nullptr;
+	SDL_Renderer *renderer = nullptr;
+	SDL_Window *window = nullptr;
 	unsigned int width, height;
 	SDL_Color palette[256];
 	
 	SDLSurface(SDLBackend *p) { parent = p; }
 
 public:
+	SDL_Window* getQTWindow(SDL_Window* QTwindow);
 	void render(shared_ptr<creaturesImage> image, unsigned int frame, int x, int y, bool trans = false, unsigned char transparency = 0, bool mirror = false, bool is_background = false);
 	void renderLine(int x1, int y1, int x2, int y2, unsigned int colour);
 	void renderText(int x, int y, std::string text, unsigned int colour, unsigned int bgcolour);
@@ -43,6 +47,8 @@ public:
 	unsigned int getWidth() const { return width; }
 	unsigned int getHeight() const { return height; }
 	void renderDone();
+
+	
 };
 
 class SDLBackend : public Backend {

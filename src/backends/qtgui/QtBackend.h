@@ -32,12 +32,15 @@ public:
 	bool keyDown(int key);
 	void keyEvent(class QKeyEvent *k, bool pressed);
 
+
 	bool selfRender() { return true; }
 	void requestRender() { needsrender = true; }	
 	bool needsRender() { return needsrender; }
 	void renderDone();
 
 	int run(int argc, char **argv);
+
+	SDL_Window* qtwin = nullptr;
 
 protected:
 	std::deque<SomeEvent> events;

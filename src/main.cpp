@@ -54,6 +54,9 @@ extern "C" int main(int argc, char *argv[]) {
 		std::cout << "Revived and being worked on by Dan Twitchett 2019 - Present" << std::endl;
 
 		engine.addPossibleBackend("sdl", shared_ptr<Backend>(new SDLBackend()));
+
+		std::cout << "SDL Backend Added" << std::endl;
+		std::cout << std::endl;
 #ifdef QT_SUPPORT
 		boost::shared_ptr<QtBackend> qtbackend = boost::shared_ptr<QtBackend>(new QtBackend());
 		boost::shared_ptr<Backend> qtbackend_generic = boost::dynamic_pointer_cast<class Backend, class QtBackend>(qtbackend);
@@ -66,8 +69,12 @@ extern "C" int main(int argc, char *argv[]) {
 		engine.addPossibleAudioBackend("openal", shared_ptr<AudioBackend>(new OpenALBackend()));
 #endif
 
+		
 		// pass command-line flags to the engine, but do no other setup
-		if (!engine.parseCommandLine(argc, argv)) return 1;
+		if (!engine.parseCommandLine(argc, argv))
+		{
+			return 1;
+		}
 		
 		// get the engine to do all the startup (read catalogue, loading world, etc)
 		if (!engine.initialSetup()) return 0;

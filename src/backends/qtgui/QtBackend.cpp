@@ -34,7 +34,8 @@ HBITMAP screen_bmp = 0;
 void *oldPixels = 0;
 #endif
 
-QtBackend::QtBackend() {
+QtBackend::QtBackend() 
+{
 	viewport = 0;
 	needsrender = false;
 
@@ -79,6 +80,7 @@ void QtBackend::setup(QWidget *vp) {
 	// alas, it sucks on Windows and OS X, so we use an offscreen buffer instead
 	putenv("SDL_VIDEODRIVER=dummy");
 #endif
+	
 	
 	SDLBackend::init();
 
