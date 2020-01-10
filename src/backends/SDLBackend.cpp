@@ -18,11 +18,26 @@
  */
 
 #include "SDLBackend.h"
-#include "SDL2_gfxPrimitives.h"
-#include "SDL_ttf.h"
 #include "openc2e.h"
 #include "Engine.h"
 #include "creaturesImage.h"
+
+#if defined(__has_include)
+#	if __has_include("SDL2/SDL2_gfxPrimitives.h")
+#		include "SDL2/SDL2_gfxPrimitives.h"
+#	else
+#		include "SDL2_gfxPrimitives.h"
+#	endif
+
+#	if __has_include("SDL2/SDL_ttf.h")
+#		include "SDL2/SDL_ttf.h"
+#	else
+#		include "SDL_ttf.h"
+#	endif
+#else
+#	include "SDL_ttf.h"
+#	include "SDL2_gfxPrimitives.h"
+#endif
 
 SDLBackend *g_backend;
 

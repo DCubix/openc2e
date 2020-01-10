@@ -593,7 +593,7 @@ unsigned int oldNeuron::magicalHash(unsigned int type) {
 	for (unsigned int t = type; t <= type_limit; t++) {
 		for (unsigned int d = 0; d < dendrites[t].size(); d++) {
 			// it is a haaaaash, so hopefully nothing will explode about the cast
-			unsigned int v = (unsigned long)dendrites[t][d].src;
+			uintptr_t v = reinterpret_cast<uintptr_t>(dendrites[t][d].src);
 			outsum += v;
 			out *= v;
 		}

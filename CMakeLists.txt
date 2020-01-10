@@ -202,12 +202,18 @@ set(Zlib_DIR "C:/zlib")
 set(BOOST_ROOT "C:/local/boost_1_72_0")
 set(BOOST_LIBRARYDIR "C:/local/boost_1_72_0/lib32")
 
+find_package(SDL2 REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_net REQUIRED)
+find_package(SDL2_gfx REQUIRED)
+find_package(SDL2_mixer REQUIRED)
+find_package(ZLIB REQUIRED)
 
 FIND_PACKAGE(Boost 1.46.0 COMPONENTS program_options filesystem thread regex serialization REQUIRED)
 FIND_LIBRARY(BOOST_SYSTEM_LIBRARY NAMES boost_system)
 
 IF(OPENC2E_USE_QT)
-	find_package(Qt4 REQUIRED)
+	find_package(Qt4 4.4.3 REQUIRED QtGui QtXml)
 ENDIF(OPENC2E_USE_QT)
 
 SET(USE_OPENAL "NO")
@@ -259,11 +265,11 @@ set_target_properties(${executable} PROPERTIES
 )
 
 # Pass flags to the compiler
-ADD_DEFINITIONS("-W0 -D_REENTRANT -DYYERROR_VERBOSE ${OPENAL_DEF} ${QT_DEF} ${SDLMIXER_DEF}")
+ADD_DEFINITIONS("-W -pedantic -D_REENTRANT -DYYERROR_VERBOSE ${OPENAL_DEF} ${QT_DEF} ${SDLMIXER_DEF}")
 
 IF(OPENC2E_USE_QT)
 	SET(FRONTEND_SRCS ${OPENC2E_SDL} ${OPENC2E_QT} ${OPENC2E_QT_UIS_H} ${OPENC2E_QT_MOC_SRCS})
-	SET(FRONTEND_LIBS ${QT_LIBRARIES})
+	SET(FRONTEND_LIBS Qt4::QtGui Qt4::QtXml)
 ELSE(OPENC2E_USE_QT)
 SET(FRONTEND_SRCS ${OPENC2E_SDL})
 	SET(FRONTEND_LIBS)
@@ -272,18 +278,23 @@ ADD_EXECUTABLE(openc2e ${OPENC2E_CORE} ${FRONTEND_SRCS} ${OPENAL_SRC} ${SDLMIXER
 
 TARGET_LINK_LIBRARIES(
 	openc2e
-	${BOOST_LIBRARYDIR}/libboost_filesystem-vc141-mt-gd-x32-1_72
-	${SDL2_LIBRARY}/x86/SDL2
-	${SDL2_NET_DIR}/lib/x86/SDL2_net
-	${SDL2_TTF_DIR}/lib/x86/SDL2_ttf
-	${SDL2_GFX_DIR}/Win32/Debug/SDL2_gfx
-	${SDL2_MIXER_DIR}/lib/x86/SDL2_mixer
-	${Zlib_DIR}/lib/zlib
+	PRIVATE
+	SDL2
+	SDL2_net
+	SDL2_ttf
+	SDL2_gfx
+	SDL2_mixer
+	${ZLIB_LIBRARIES}
 	${OPENAL_LIBRARY}
 	${ALUT_LIBRARY}
 	${FRONTEND_LIBS}
 	ws2_32
-	)
+	Boost::program_options
+	Boost::filesystem
+	Boost::thread
+	Boost::regex
+	Boost::serialization
+)
 IF(BOOST_SYSTEM_LIBRARY)
 TARGET_LINK_LIBRARIES(openc2e boost_system)
 ENDIF(BOOST_SYSTEM_LIBRARY)
@@ -300,13 +311,13 @@ INCLUDE_DIRECTORIES(BEFORE
 	${SDL2_MIXER_DIR}/include
 	${OPENAL_INCLUDE_DIR}
 	${ALUT_INCLUDE_DIR}
-	${Zlib_DIR}/include
+	${ZLIB_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIR}
-	)
+)
 
 FILE(GLOB CAOSVM_FILES ${SRC}/src/caos/caosVM_*.cpp)
 
-if(LINUX)
+if(LINUX OR MINGW)
 ADD_CUSTOM_COMMAND(
 	OUTPUT ${GEN}/commandinfo.yml
 	COMMAND perl parsedocs.pl ${CAOSVM_FILES} > ${GEN}/commandinfo.yml
@@ -377,5 +388,5 @@ ADD_CUSTOM_TARGET(generated DEPENDS
 	${GEN}/cataloglexer.cpp
 	${GEN}/cmddata.cpp
 )
-endif(LINUX)
+endif(LINUX OR MINGW)
 

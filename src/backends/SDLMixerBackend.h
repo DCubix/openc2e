@@ -22,7 +22,15 @@
 
 #include "SkeletonAudioBackend.h"
 
-#include "SDL_mixer.h"
+#if defined(__has_include)
+#	if __has_include("SDL2/SDL_mixer.h")
+#		include "SDL2/SDL_mixer.h"
+#	else
+#		include "SDL_mixer.h"
+#	endif
+#else
+#	include "SDL_mixer.h"
+#endif
 
 class SDLMixerBuffer;
 

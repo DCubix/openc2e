@@ -20,8 +20,25 @@
 #ifndef _SDLBACKEND_H
 #define _SDLBACKEND_H
 
-#include "SDL.h"
-#include <SDL_net.h>
+#if defined(__has_include)
+#	if __has_include("SDL2/SDL.h")
+#		include "SDL2/SDL.h"
+#	else
+#		include "SDL.h"
+#	endif
+
+#	if __has_include("SDL2/SDL_net.h")
+#		include "SDL2/SDL_net.h"
+#	else
+#		include "SDL_net.h"
+#	endif
+
+#else
+#	include "SDL.h"
+#	include <SDL_net.h>
+#endif
+
+
 #include "Backend.h"
 
 class SDLSurface : public Surface
