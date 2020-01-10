@@ -53,7 +53,7 @@ extern "C" int main(int argc, char *argv[]) {
 
 		std::cout << "Revived and being worked on by Dan Twitchett 2019 - Present" << std::endl;
 
-		engine.addPossibleBackend("sdl", shared_ptr<Backend>(new SDLBackend()));
+		engine.addPossibleBackend("sdl", boost::shared_ptr<Backend>(new SDLBackend()));
 
 		std::cout << "SDL Backend Added" << std::endl;
 		std::cout << std::endl;

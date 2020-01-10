@@ -114,7 +114,8 @@ ChemicalSelector::ChemicalSelector(CreatureGrapher *p): QWidget(p), parent(p) {
 	}
 
 	for (std::map<std::string, std::vector<unsigned int> >::iterator i = chemgroups.begin();
-	     i != chemgroups.end(); i++) { // i hate c++
+	     i != chemgroups.end(); i++) 
+	{ // i hate c++
 	  new QListWidgetItem(i->first.c_str(), grouplist);
 	}
 	grouplist->setCurrentRow(0);

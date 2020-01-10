@@ -57,11 +57,14 @@ void SDLBackend::resizeNotify(int _w, int _h)
 		throw creaturesException(std::string("Failed to create SDL surface due to: ") + SDL_GetError());
 }
 
-void SDLBackend::init() {
+void SDLBackend::init() 
+{
 	int init = SDL_INIT_VIDEO;
 
 	if (SDL_Init(init) < 0)
 		throw creaturesException(std::string("SDL error during initialization: ") + SDL_GetError());
+
+	
 
 	std::string windowtitle;
 	if (engine.getGameName().size()) windowtitle = engine.getGameName() + " - ";
@@ -226,7 +229,9 @@ retry:
 				e.type = eventkeydown;
 				e.key = event.key.keysym.sym;
 				return true;
-			} else { // TODO: should this be 'else'?
+			} 
+			else 
+			{ // TODO: should this be 'else'?
 				int key = translateKey(event.key.keysym.sym);
 				if (key != -1) {
 					e.type = eventspecialkeydown;
@@ -396,7 +401,7 @@ void SDLSurface::render(shared_ptr<creaturesImage> image, unsigned int frame, in
 			surfpalette = (SDL_Color *)image->getCustomPalette();
 		else
 			surfpalette = palette;
-		SDL_Palette* pal2;
+		SDL_Palette* pal2 = nullptr;
 		SDL_SetPaletteColors(pal2, surfpalette, 0, 256);
 	} else if (image->format() == if_16bit) {
 		unsigned int rmask, gmask, bmask;

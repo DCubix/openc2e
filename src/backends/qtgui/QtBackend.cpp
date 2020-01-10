@@ -57,10 +57,12 @@ void QtBackend::shutdown() {
 	SDLBackend::shutdown();
 }
 
-void QtBackend::init() {
+void QtBackend::init() 
+{
 }
 
-void QtBackend::setup(QWidget *vp) {
+void QtBackend::setup(QWidget *vp) 
+{
 	viewport = vp;
 
 #if defined(Q_WS_X11)
@@ -81,7 +83,8 @@ void QtBackend::setup(QWidget *vp) {
 	putenv("SDL_VIDEODRIVER=dummy");
 #endif
 	
-	
+	SDLBackend::SetWindow(SDL_CreateWindowFrom(viewport->winId()));
+
 	SDLBackend::init();
 
 	/*

@@ -96,6 +96,8 @@ public:
 	
 	void setPalette(uint8 *data);
 	void delay(int msec);
+
+	void SetWindow(SDL_Window* w) { mainsurface.window = w; }
 };
 
 #endif

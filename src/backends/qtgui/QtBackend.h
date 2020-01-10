@@ -42,6 +42,9 @@ public:
 
 	SDL_Window* qtwin = nullptr;
 
+	QWidget* getViewPort() { return viewport; }
+
+
 protected:
 	std::deque<SomeEvent> events;
 	
@@ -53,4 +56,3 @@ protected:
 };
 
 #endif
-
