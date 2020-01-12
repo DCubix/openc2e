@@ -17,13 +17,23 @@
 #include "QtBackend.h"
 #include "qtopenc2e.h"
 #include "Engine.h"
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
 #include <QKeyEvent>
-#include <QApplication>
-#include <QWidget>
 #include <QPainter>
 #include <boost/format.hpp>
 #include <iostream>
 #include "exceptions.h"
+
+#if defined(__has_include)
+#	if __has_include("SDL2/SDL.h")
+#		include "SDL2/SDL.h"
+#	else
+#		include "SDL.h"
+#	endif
+#else
+#	include "SDL.h"
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -50,8 +60,8 @@ void QtBackend::shutdown() {
 #ifdef _WIN32
 	if (screen_bmp) DeleteObject(screen_bmp);
 	
-	SDL_Surface *surf = getMainSDLSurface();
-	if (surf) surf->pixels = oldPixels;
+	// SDL_Surface *surf = getMainSDLSurface();
+	// if (surf) surf->pixels = oldPixels;
 #endif
 
 	SDLBackend::shutdown();
@@ -83,8 +93,7 @@ void QtBackend::setup(QWidget *vp)
 	putenv("SDL_VIDEODRIVER=dummy");
 #endif
 	
-	SDLBackend::SetWindow(SDL_CreateWindowFrom(viewport->winId()));
-
+	SDLBackend::setHandle((void*) viewport->winId());
 	SDLBackend::init();
 
 	/*
@@ -132,8 +141,8 @@ void QtBackend::resized(int w, int h) {
 	binfo->bmiHeader.biXPelsPerMeter = 0;
 	binfo->bmiHeader.biYPelsPerMeter = 0;	
 
-	SDL_Surface *surf = getMainSDLSurface();
-	assert(idealBpp() == surf->format->BitsPerPixel);
+	//SDL_Surface *surf = getMainSDLSurface();
+	//assert(idealBpp() == surf->format->BitsPerPixel);
 
 	// Set the relevant entries of the structure.
 	binfo->bmiHeader.biWidth = w;
@@ -145,9 +154,7 @@ void QtBackend::resized(int w, int h) {
 	if (idealBpp() == 16) {
 		binfo->bmiHeader.biCompression = BI_BITFIELDS;
 		unsigned int *masks = (unsigned int *)binfo->bmiColors;
-		masks[0] = surf->format->Rmask;
-		masks[1] = surf->format->Gmask;
-		masks[2] = surf->format->Bmask;
+
 	} else {
 		binfo->bmiHeader.biCompression = BI_RGB;
 		if (idealBpp() == 8) {
@@ -157,9 +164,9 @@ void QtBackend::resized(int w, int h) {
 
 	// Create the actual DIB.
 	void *pixels = 0;
-	HDC hdc = GetDC(viewport->winId());
+    HDC hdc = GetDC((HWND)viewport->winId());
 	screen_bmp = CreateDIBSection(hdc, binfo, DIB_RGB_COLORS, (void **)(&pixels), NULL, 0);
-	ReleaseDC(viewport->winId(), hdc);
+    ReleaseDC((HWND)viewport->winId(), hdc);
 
 	// Free the BITMAPINFO structure now we're done with it.
 	free(binfo);
@@ -171,18 +178,16 @@ void QtBackend::resized(int w, int h) {
 	}
 	
 	// TODO: Observe how this helpfully stomps over surf->pixels. :-/
-	oldPixels = surf->pixels; // store so we can restore before SDL shutdown
-	surf->pixels = pixels;
+	// oldPixels = surf->pixels; // store so we can restore before SDL shutdown
+	// surf->pixels = pixels;
 
 	// So, CreateDIBSection doesn't pay a lot of attention to what we ask for.
 	// Let's snaffle the information back from the DIB object.
 	// TODO: Observe how this helpfully stomps over surf->w/h/pitch. :-/
 	BITMAP dibsection;
 	GetObject(screen_bmp, sizeof(BITMAP), &dibsection);
-	surf->w = dibsection.bmWidth;
-	surf->h = dibsection.bmHeight;
-	surf->pitch = dibsection.bmWidthBytes;
-	assert(dibsection.bmBitsPixel == surf->format->BitsPerPixel);
+
+	// assert(dibsection.bmBitsPixel == surf->format->BitsPerPixel);
 
 #endif
 
@@ -202,19 +207,22 @@ void QtBackend::renderDone() {
 #if defined(_WIN32)
 	// We need to blit from the DIB we made earlier. Easy!
 	HDC hdc, mdc;
-	SDL_Surface *surf = getMainSDLSurface(); // for width/height
+	SDL_Texture *surf = getMainSDLTexture(); // for width/height
+
+	int w, h;
+	SDL_QueryTexture(surf, nullptr, nullptr, &w, &h);
 
 	// Obtain the DC for our viewport and create a compatible one, then select the DIB into it.
-	hdc = GetDC(viewport->winId());
+    hdc = GetDC((HWND)viewport->winId());
 	mdc = CreateCompatibleDC(hdc);
 	SelectObject(mdc, screen_bmp);
 
 	// Blit!
-	BitBlt(hdc, 0, 0, surf->w, surf->h, mdc, 0, 0, SRCCOPY);
+	BitBlt(hdc, 0, 0, w, h, mdc, 0, 0, SRCCOPY);
 
 	// Tidy up by deleting our temporary one and releasing the viewport DC.
 	DeleteDC(mdc);
-	ReleaseDC(viewport->winId(), hdc);
+    ReleaseDC((HWND)viewport->winId(), hdc);
 
 	// TODO: call GdiFlush? SDL doesn't seem to bother.
 	
@@ -222,8 +230,16 @@ void QtBackend::renderDone() {
 	// As a generic method, we use Qt's code.	
 	// Note that we don't bother to lock because we know the dummy driver doesn't bother with locking.
 
-	SDL_Surface *surf = getMainSDLSurface();
-	QImage img((uchar *)surf->pixels, surf->w, surf->h, QImage::Format_RGB32);
+	SDL_Texture *surf = getMainSDLTexture();
+	int w, h;
+	SDL_QueryTexture(surf, nullptr, nullptr, &w, &h);
+
+	void* pixels;
+	int pitch;
+	SDL_LockTexture(surf, nullptr, &pixels, &pitch);
+	QImage img((uchar*)pixels, w, h, QImage::Format_RGB32);
+	SDL_UnlockTexture(surf);
+	
 	QPainter painter(viewport);
 	painter.drawImage(0, 0, img);
 #endif

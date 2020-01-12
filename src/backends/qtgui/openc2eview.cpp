@@ -19,7 +19,7 @@
 #include "Camera.h"
 
 #include "openc2eview.h"
-#include <QtGui>
+#include <QtWidgets>
 #include "QtBackend.h"
 
 #ifdef _WIN32
@@ -92,8 +92,6 @@ void openc2eView::resizeEvent(QResizeEvent *) {
 }
 
 void openc2eView::paintEvent(QPaintEvent *) {
-	((QApplication *)QApplication::instance())->syncX();
-
 	if (!firsttime) {
 		// TODO: mad hax
 		if (currentwidth == viewport()->width() && currentheight == viewport()->height()) {

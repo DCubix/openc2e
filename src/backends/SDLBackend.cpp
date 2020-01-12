@@ -51,7 +51,7 @@ SDLBackend::SDLBackend() : mainsurface(this) {
 	// reasonable defaults
 	mainsurface.width = 800;
 	mainsurface.height = 600;
-	mainsurface.surface = 0;
+	mainsurface.texture = 0;
 }
 
 int SDLBackend::idealBpp() {
@@ -62,14 +62,21 @@ int SDLBackend::idealBpp() {
 
 void SDLBackend::resizeNotify(int _w, int _h) 
 {
+	if (mainsurface.texture != nullptr) {
+		SDL_DestroyTexture(mainsurface.texture);
+	}
+
 	mainsurface.width = _w;
 	mainsurface.height = _h;
-	mainsurface.surface = SDL_CreateRGBSurface(0, _w, _h, idealBpp(), 0x00FF0000,
-		0x0000FF00,
-		0x000000FF,
-		0xFF000000);
-	if (!mainsurface.surface)
-		throw creaturesException(std::string("Failed to create SDL surface due to: ") + SDL_GetError());
+	mainsurface.texture = SDL_CreateTexture(
+		mainsurface.renderer,
+		SDL_BITSPERPIXEL(idealBpp()),
+		SDL_TEXTUREACCESS_STATIC,
+		_w, _h
+	);
+
+	if (!mainsurface.texture)
+		throw creaturesException(std::string("Failed to create SDL texture due to: ") + SDL_GetError());
 }
 
 void SDLBackend::init() 
@@ -79,7 +86,11 @@ void SDLBackend::init()
 	if (SDL_Init(init) < 0)
 		throw creaturesException(std::string("SDL error during initialization: ") + SDL_GetError());
 
-	
+	mainsurface.window = SDL_CreateWindowFrom(handle);
+	if (mainsurface.window == nullptr) {
+		std::cerr << "Unable to create a window: " << SDL_GetError() << std::endl;
+		abort();
+	}
 
 	std::string windowtitle;
 	if (engine.getGameName().size()) windowtitle = engine.getGameName() + " - ";
@@ -89,9 +100,8 @@ void SDLBackend::init()
 
 	mainsurface.renderer = SDL_CreateRenderer(mainsurface.window, -1, 0);
 
-
 	// TODO SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL) (DEPRECATED);
-	SDL_ShowCursor(false);
+	// SDL_ShowCursor(false);
 	if (TTF_Init() == 0) {
 		// TODO: think about font sizing
 		basicfont = TTF_OpenFont("VeraSe.ttf", 9);
@@ -287,98 +297,29 @@ void SDLSurface::renderText(int x, int y, std::string text, unsigned int colour,
 	if (!parent->basicfont) return;
 	if (text.empty()) return;
 
-	SDL_Color sdlcolour;
-	if (engine.version == 1) sdlcolour = palette[colour];
-	else sdlcolour = getColourFromRGBA(colour);
+	// TODO: Implement later
+	// SDL_Color sdlcolour;
+	// if (engine.version == 1) sdlcolour = palette[colour];
+	// else sdlcolour = getColourFromRGBA(colour);
 	
-	SDL_Surface *textsurf;
+	// SDL_Surface *textsurf;
 
-	if (bgcolour == 0) { // transparent
-		textsurf = TTF_RenderText_Solid(parent->basicfont, text.c_str(), sdlcolour);
-	} else {
-		SDL_Color sdlbgcolour;
-		if (engine.version == 1) sdlbgcolour = palette[bgcolour];
-		else sdlbgcolour = getColourFromRGBA(bgcolour);
-		textsurf = TTF_RenderText_Shaded(parent->basicfont, text.c_str(), sdlcolour, sdlbgcolour);
-	}
+	// if (bgcolour == 0) { // transparent
+	// 	textsurf = TTF_RenderText_Solid(parent->basicfont, text.c_str(), sdlcolour);
+	// } else {
+	// 	SDL_Color sdlbgcolour;
+	// 	if (engine.version == 1) sdlbgcolour = palette[bgcolour];
+	// 	else sdlbgcolour = getColourFromRGBA(bgcolour);
+	// 	textsurf = TTF_RenderText_Shaded(parent->basicfont, text.c_str(), sdlcolour, sdlbgcolour);
+	// }
 
-	if (!textsurf) return; // thanks, SDL_ttf, we love you too
+	// if (!textsurf) return; // thanks, SDL_ttf, we love you too
 
-	SDL_Rect destrect;
-	destrect.x = x; destrect.y = y;	
-	SDL_BlitSurface(textsurf, NULL, surface, &destrect);
-	SDL_FreeSurface(textsurf);
+	// SDL_Rect destrect;
+	// destrect.x = x; destrect.y = y;	
+	// SDL_BlitSurface(textsurf, NULL, surface, &destrect);
+	// SDL_FreeSurface(textsurf);
 }
-
-//*** code to mirror 16bpp surface - slow, we should cache this!
-
-Uint8 *pixelPtr(SDL_Surface *surf, int x, int y, int bytesperpixel) {
-	return (Uint8 *)surf->pixels + (y * surf->pitch) + (x * bytesperpixel);
-}
-
-SDL_Surface *MirrorSurface(SDL_Surface *surf, SDL_Color *surfpalette) {
-	SDL_Surface* newsurf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w, surf->h, surf->format->BitsPerPixel, surf->format->Rmask, surf->format->Gmask, surf->format->Bmask, surf->format->Amask);
-	assert(newsurf);
-	SDL_Palette* pal1;
-	if (surfpalette) SDL_SetPaletteColors(pal1, surfpalette, 0, 256);
-	SDL_BlitSurface(surf, 0, newsurf, 0);
-
-	if (SDL_MUSTLOCK(newsurf))
-		if (SDL_LockSurface(newsurf) == -1) {
-			SDL_FreeSurface(newsurf);
-			throw creaturesException("SDLBackend failed to lock surface for mirroring");
-		}
-
-	for (int y = 0; y < newsurf->h; y++) {
-		for (int x = 0; x < (newsurf->w / 2); x++) {
-			switch (surf->format->BitsPerPixel) {
-				case 8:
-					{
-					Uint8 *one = pixelPtr(newsurf, x, y, 1);
-					Uint8 *two = pixelPtr(newsurf, (newsurf->w - 1) - x, y, 1);
-					Uint8 temp = *one;
-					*one = *two;
-					*two = temp;
-					}
-					break;
-
-				case 16:
-					{
-					Uint16 *one = (Uint16 *)pixelPtr(newsurf, x, y, 2);
-					Uint16 *two = (Uint16 *)pixelPtr(newsurf, (newsurf->w - 1) - x, y, 2);
-					Uint16 temp = *one;
-					*one = *two;
-					*two = temp;
-					}
-					break;
-
-				case 24:
-					{
-						Uint8 *one = pixelPtr(newsurf, x, y, 3);
-						Uint8 *two = pixelPtr(newsurf, (newsurf->w - 1) - x, y, 3);
-						Uint8 temp[3];
-						temp[0] = *one; temp[1] = *(one + 1); temp[2] = *(one + 2);
-						*one = *two; *(one + 1) = *(two + 1); *(one + 2) = *(two + 2);
-						*two = temp[0]; *(two + 1) = temp[1]; *(two + 2) = temp[2];
-					
-					}
-					break;
-
-				default:
-					if (SDL_MUSTLOCK(newsurf)) SDL_UnlockSurface(newsurf);
-					SDL_FreeSurface(newsurf);
-					throw creaturesException("SDLBackend failed to mirror surface");
-			}
-		}
-	}
-	
-	if (SDL_MUSTLOCK(newsurf))
-		SDL_UnlockSurface(newsurf);
-
-	return newsurf;
-}
-
-//*** end mirror code
 
 SDL_Window * SDLSurface::getQTWindow(SDL_Window * QTwindow)
 {
@@ -397,77 +338,61 @@ void SDLSurface::render(shared_ptr<creaturesImage> image, unsigned int frame, in
 	assert(image);
 	assert(image->numframes() > frame);
 
+	// This is a freaking slow function...
+	// TODO: Optimize
+
 	// don't bother rendering off-screen stuff
 	if (x >= (int)width) return; if (y >= (int)height) return;
 	if ((x + image->width(frame)) <= 0) return;
 	if ((y + image->height(frame)) <= 0) return;
 
 	// create surface
-	SDL_Surface *surf;
+	SDL_Texture *tex;
 	SDL_Color *surfpalette = 0;
-	if (image->format() == if_paletted) {
-		surf = SDL_CreateRGBSurfaceFrom(image->data(frame),
-						image->width(frame), image->height(frame),
-						8, // depth
-						image->width(frame), // pitch
-						0, 0, 0, 0);
-		assert(surf);
-		if (image->hasCustomPalette())
-			surfpalette = (SDL_Color *)image->getCustomPalette();
-		else
-			surfpalette = palette;
-		SDL_Palette* pal2 = nullptr;
-		SDL_SetPaletteColors(pal2, surfpalette, 0, 256);
-	} else if (image->format() == if_16bit) {
-		unsigned int rmask, gmask, bmask;
-		if (image->is565()) {
-			rmask = 0xF800; gmask = 0x07E0; bmask = 0x001F;
-		} else {
-			rmask = 0x7C00; gmask = 0x03E0; bmask = 0x001F;
-		}
-		surf = SDL_CreateRGBSurfaceFrom(image->data(frame),
-						image->width(frame), image->height(frame),
-						16, // depth
-						image->width(frame) * 2, // pitch
-						rmask, gmask, bmask, 0); // RGBA mask
-		assert(surf);
-	} else {
-		assert(image->format() == if_24bit);
 
-		surf = SDL_CreateRGBSurfaceFrom(image->data(frame),
-						image->width(frame), image->height(frame),
-						24, // depth
-						image->width(frame) * 3, // pitch
-						0x00FF0000, 0x0000FF00, 0x000000FF, 0); // RGBA mask
-		assert(surf);
-
-	}
-
-	// try mirroring, if necessary
-	try 
-	{
-		if (mirror) 
-		{
-			SDL_Surface *newsurf = MirrorSurface(surf, surfpalette);
-			SDL_FreeSurface(surf);
-			surf = newsurf;
-		}
-	} catch (std::exception &e) {
-		SDL_FreeSurface(surf);
-		throw;
+	switch (image->format()) {
+		case if_paletted: {
+			tex = SDL_CreateTexture(
+				renderer,
+				SDL_BITSPERPIXEL(8),
+				SDL_TEXTUREACCESS_STATIC,
+				image->width(frame), image->height(frame)
+			);
+			SDL_UpdateTexture(tex, nullptr, image->data(frame), image->width(frame));
+		} break;
+		case if_16bit: {
+			tex = SDL_CreateTexture(
+				renderer,
+				SDL_BITSPERPIXEL(16),
+				SDL_TEXTUREACCESS_STATIC,
+				image->width(frame), image->height(frame)
+			);
+			SDL_UpdateTexture(tex, nullptr, image->data(frame), image->width(frame) * 2);
+		} break;
+		default: {
+			tex = SDL_CreateTexture(
+				renderer,
+				SDL_BITSPERPIXEL(24),
+				SDL_TEXTUREACCESS_STATIC,
+				image->width(frame), image->height(frame)
+			);
+			SDL_UpdateTexture(tex, nullptr, image->data(frame), image->width(frame) * 3);
+		} break;
 	}
 	
 	// set colour-keying/alpha
-	if (!is_background) SDL_SetColorKey(surf, SDL_TRUE, 0);
+	// TODO: if (!is_background) SDL_SetColorKey(surf, SDL_TRUE, 0);
+
 	if (trans) SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	
 	// do actual blit
 	SDL_Rect destrect;
 	destrect.x = x; destrect.y = y;
-	SDL_BlitSurface(surf, 0, surface, &destrect);
+
+	SDL_RenderCopyEx(renderer, tex, nullptr, &destrect, 0.0, nullptr, (SDL_RendererFlip) (mirror ? SDL_FLIP_HORIZONTAL : 0));
 
 	// free surface
-	SDL_FreeSurface(surf);
+	SDL_DestroyTexture(tex);
 }
 
 void SDLSurface::renderDone() 
@@ -475,23 +400,26 @@ void SDLSurface::renderDone()
 	SDL_RenderPresent(renderer);
 }
 
-
-
 void SDLSurface::blitSurface(Surface *s, int x, int y, int w, int h) {
-	SDLSurface *src = dynamic_cast<SDLSurface *>(s);
+	SDLSurface *src = dynamic_cast<SDLSurface*>(s);
 	assert(src);
 
-	// TODO: evil use of internal SDL api
 	SDL_Rect r; r.x = x; r.y = y; r.w = w; r.h = h;
-	SDL_SoftStretch(src->surface, 0, surface, &r);
+	SDL_RenderCopy(renderer, src->texture, nullptr, &r);
 }
 
 Surface *SDLBackend::newSurface(unsigned int w, unsigned int h) {
-	SDL_Surface *surf = mainsurface.surface;
-	SDL_Surface* underlyingsurf = SDL_CreateRGBSurface(0, w, h, surf->format->BitsPerPixel, surf->format->Rmask, surf->format->Gmask, surf->format->Bmask, surf->format->Amask);
+	SDL_Texture *surf = mainsurface.texture;
+	SDL_Texture* underlyingsurf = SDL_CreateTexture(
+		mainsurface.renderer,
+		SDL_BITSPERPIXEL(idealBpp()),
+		SDL_TEXTUREACCESS_STATIC,
+		w, h
+	);
 	assert(underlyingsurf);
+
 	SDLSurface *newsurf = new SDLSurface(this);
-	newsurf->surface = underlyingsurf;
+	newsurf->texture = underlyingsurf;
 	newsurf->width = w;
 	newsurf->height = h;
 	return newsurf;
@@ -501,7 +429,7 @@ void SDLBackend::freeSurface(Surface *s) {
 	SDLSurface *surf = dynamic_cast<SDLSurface *>(s);
 	assert(surf);
 
-	SDL_FreeSurface(surf->surface);
+	SDL_DestroyTexture(surf->texture);
 	delete surf;
 }
 

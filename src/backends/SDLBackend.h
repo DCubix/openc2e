@@ -47,7 +47,7 @@ class SDLSurface : public Surface
 
 protected:
 	class SDLBackend *parent;
-	SDL_Surface *surface = nullptr;
+	SDL_Texture *texture = nullptr;
 	SDL_Renderer *renderer = nullptr;
 	SDL_Window *window = nullptr;
 	unsigned int width, height;
@@ -65,7 +65,6 @@ public:
 	unsigned int getHeight() const { return height; }
 	void renderDone();
 
-	
 };
 
 class SDLBackend : public Backend {
@@ -74,6 +73,7 @@ class SDLBackend : public Backend {
 protected:
 	bool networkingup;
 
+	void* handle;
 	SDLSurface mainsurface;
 	TCPsocket listensocket;
 
@@ -83,7 +83,7 @@ protected:
 	void resizeNotify(int _w, int _h);
 	int translateKey(int key);
 
-	SDL_Surface *getMainSDLSurface() { return mainsurface.surface; }
+	SDL_Texture *getMainSDLTexture() { return mainsurface.texture; }
 
 	virtual int idealBpp();
 
@@ -114,7 +114,7 @@ public:
 	void setPalette(uint8 *data);
 	void delay(int msec);
 
-	void SetWindow(SDL_Window* w) { mainsurface.window = w; }
+	void setHandle(void* hnd) { handle = hnd; }
 };
 
 #endif

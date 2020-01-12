@@ -16,7 +16,7 @@
 
 #include "World.h"
 #include "qtopenc2e.h"
-#include <QtGui>
+#include <QtWidgets>
 #include "openc2eview.h"
 #include "Engine.h"
 #include "AudioBackend.h"

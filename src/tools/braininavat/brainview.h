@@ -1,4 +1,4 @@
-#include <QtGui>
+#include <QtWidgets>
 
 class BrainView : public QWidget {
 	Q_OBJECT

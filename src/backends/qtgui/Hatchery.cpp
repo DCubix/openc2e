@@ -21,7 +21,7 @@
 #include "mmapifstream.h"
 #include "qtopenc2e.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 /*
   C1 hatchery resources:

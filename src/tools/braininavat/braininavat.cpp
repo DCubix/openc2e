@@ -15,7 +15,7 @@
 */
 
 #include "braininavat.h"
-#include <QtGui>
+#include <QtWidgets>
 #include "brainview.h"
 #include "c2eBrain.h"
 
@@ -224,7 +224,7 @@ void BrainInAVat::loadFile(const QString &fileName) {
 	sleepToggleAct->setEnabled(false);
 	ourView->update();
 
-	ifstream f(fileName.toAscii(), std::ios::binary);
+	ifstream f(fileName.toLatin1(), std::ios::binary);
 	if (f.fail()) {
 		QMessageBox::warning(this, tr("openc2e's Brain in a Vat"), tr("Cannot read file %1.").arg(fileName));
 		return;

@@ -23,7 +23,7 @@
  */
 
 #include "debugkit.h"
-#include <QtGui>
+#include <QtWidgets>
 
 #include <assert.h>
 #include <fstream>
@@ -257,7 +257,7 @@ void DebugKit::readAgents() {
 		QStringList cobfiles = dir.entryList();
 		for (unsigned int j = 0; j < cobfiles.size(); j++) {
 			QString file = dirname + '/' + cobfiles[j];
-			std::ifstream cobstream(file.toAscii(), std::ios::binary);
+			std::ifstream cobstream(file.toLatin1(), std::ios::binary);
 			if (!cobstream.fail()) {
 				c1cobfile cobfile(cobstream);
 				QListWidgetItem *newItem = new QListWidgetItem(cobfile.name.c_str(), agentlist);
@@ -269,7 +269,7 @@ void DebugKit::readAgents() {
 
 void DebugKit::injectButton() {
 	QString filename = agentlist->currentItem()->toolTip();
-	std::ifstream cobstream(filename.toAscii(), std::ios::binary);
+	std::ifstream cobstream(filename.toLatin1(), std::ios::binary);
 	if (cobstream.fail()) {
 		QMessageBox::warning(this, tr("Failed to open"), filename);
 		return;
@@ -300,10 +300,10 @@ void DebugKit::injectAttempt() {
 	socket->disconnect(socket, SIGNAL(connected()), this, SLOT(injectAttempt()));
 	setBusyStatus(false);
 
-	socket->write(injectdata.toAscii());
+	socket->write(injectdata.toLatin1());
 	socket->waitForReadyRead(200); // wait for 200ms at most
 	QString result = QString(socket->readAll().data()).trimmed();
-	std::cout << (char *)result.toAscii().data() << std::endl;
+	std::cout << (char *)result.toLatin1().data() << std::endl;
 	socket->close();
 
 	if (result.size())

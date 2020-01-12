@@ -22,7 +22,7 @@
 
 #include <stdlib.h> // load the standard libraries for these defines
 
-#if HAVE_STDINT_H
+// #if HAVE_STDINT_H
 
 #include <stdint.h>
 
@@ -30,61 +30,61 @@ typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 
-#else
+// #else
 
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
+// typedef unsigned char uint8;
+// typedef unsigned short uint16;
+// typedef unsigned int uint32;
 
-#endif
+// #endif
 
-#ifndef OC2E_BIG_ENDIAN
-#	ifdef __GNU__
-#		include <endian.h>
-#		if __BYTE_ORDER == __LITTLE_ENDIAN
-#			define OC2E_BIG_ENDIAN 0
-#		else
-#			define OC2E_BIG_ENDIAN 1
-#		endif
-#	else
-#		if defined(_MSC_VER) || defined(__i386__)
-#			define OC2E_BIG_ENDIAN 0
-#		else
-#			define OC2E_BIG_ENDIAN 1
-#		endif
-#	endif
-#endif
+// #ifndef OC2E_BIG_ENDIAN
+// #	ifdef __GNU__
+// #		include <endian.h>
+// #		if __BYTE_ORDER == __LITTLE_ENDIAN
+// #			define OC2E_BIG_ENDIAN 0
+// #		else
+// #			define OC2E_BIG_ENDIAN 1
+// #		endif
+// #	else
+// #		if defined(_MSC_VER) || defined(__i386__)
+// #			define OC2E_BIG_ENDIAN 0
+// #		else
+// #			define OC2E_BIG_ENDIAN 1
+// #		endif
+// #	endif
+// #endif
 
-#if OC2E_BIG_ENDIAN
+// #if OC2E_BIG_ENDIAN
 
-# if HAVE_BYTESWAP_H
+// # if HAVE_BYTESWAP_H
 
-#include <byteswap.h>
-static inline uint16 swapEndianShort(uint16 a) {
-	return bswap_16(a);
-}
+// #include <byteswap.h>
+// static inline uint16 swapEndianShort(uint16 a) {
+// 	return bswap_16(a);
+// }
 
-static inline uint32 swapEndianLong(uint32 a) {
-	return bswap_32(a);
-}
+// static inline uint32 swapEndianLong(uint32 a) {
+// 	return bswap_32(a);
+// }
 
-# else // HAVE_BYTESWAP_H
+// # else // HAVE_BYTESWAP_H
 
-static inline uint16 swapEndianShort(uint16 a) {
-	return ((((uint16)(a) & 0xff00) >> 8) |
-				   (((uint16)(a) & 0x00ff) << 8));
-}
+// static inline uint16 swapEndianShort(uint16 a) {
+// 	return ((((uint16)(a) & 0xff00) >> 8) |
+// 				   (((uint16)(a) & 0x00ff) << 8));
+// }
 
-static inline uint32 swapEndianLong(uint32 a) {
-	return ((((uint32)(a) & 0xff000000) >> 24) |
-				   (((uint32)(a) & 0x00ff0000) >> 8)  |
-				   (((uint32)(a) & 0x0000ff00) << 8)  |
-				   (((uint32)(a) & 0x000000ff) << 24));
-}
+// static inline uint32 swapEndianLong(uint32 a) {
+// 	return ((((uint32)(a) & 0xff000000) >> 24) |
+// 				   (((uint32)(a) & 0x00ff0000) >> 8)  |
+// 				   (((uint32)(a) & 0x0000ff00) << 8)  |
+// 				   (((uint32)(a) & 0x000000ff) << 24));
+// }
 
-# endif
+// # endif
 
-#else // OC2E_BIG_ENDIAN
+// #else // OC2E_BIG_ENDIAN
 
 static inline uint16 swapEndianShort(uint16 a) {
 	return a;
@@ -94,7 +94,7 @@ static inline uint32 swapEndianLong(uint32 a) {
 	return a;
 }
 
-#endif
+// #endif
 
 #endif // _ENDIANLOVE_H
 

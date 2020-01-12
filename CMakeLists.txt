@@ -1,4 +1,15 @@
-PROJECT (OPENC2E CXX C)
+cmake_minimum_required(VERSION 3.1.0)
+PROJECT(OPENC2E CXX C)
+
+cmake_policy(SET CMP0071 NEW)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+	set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
 
 SET(SRC "${OPENC2E_SOURCE_DIR}")
 SET(BIN "${OPENC2E_BINARY_DIR}")
@@ -13,16 +24,10 @@ IF (CMAKE_BUILD_TYPE STREQUAL "")
 	SET(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "The type of build to perform. Valid values are: RelWithDebInfo (default), Debug, Release, MinSizeRel" FORCE)
 ENDIF (CMAKE_BUILD_TYPE STREQUAL "")
 
-SET(OPENC2E_USE_QT "TRUE" CACHE BOOL "Build the qt GUI")
-SET(OPENC2E_USE_OPENAL "AUTO" CACHE STRING "Use OpenAL (YES/NO/AUTO)")
-IF (OPENC2E_USE_OPENAL MATCHES "^(YES|NO|AUTO)$")
-ELSE (OPENC2E_USE_OPENAL MATCHES "^(YES|NO|AUTO)$")
-	MESSAGE(SEND_ERROR "The value of OPENC2E_USE_OPENAL must be YES, NO, or AUTO.")
-ENDIF (OPENC2E_USE_OPENAL MATCHES "^(YES|NO|AUTO)$")
-
 SET(OPENC2E_USE_SERIALIZATION "FALSE" CACHE BOOL "Build the experimental serialization code")
 MARK_AS_ADVANCED(FORCE OPENC2E_USE_SERIALIZATION)
-IF (OPENC2E_USE_SERIALIZATION)
+
+IF(OPENC2E_USE_SERIALIZATION)
 	SET(SER_SRCS src/caos/caosVM_ser_real.cpp)
 ELSE (OPENC2E_USE_SERIALIZATION)
 	SET(SER_SRCS src/caos/caosVM_ser_stub.cpp)
@@ -30,6 +35,7 @@ ENDIF (OPENC2E_USE_SERIALIZATION)
 
 SET(OPENC2E_PROFILE_ALLOCATION "FALSE" CACHE BOOL "Collect allocation profile stats for DBG: SIZO")
 MARK_AS_ADVANCED(FORCE OPENC2E_PROFILE_ALLOCATION)
+
 IF (OPENC2E_PROFILE_ALLOCATION)
 	ADD_DEFINITIONS("-DPROFILE_ALLOCATION_COUNT -DPROFILE_ALLOCATION_THREAD_SAFE")
 ENDIF (OPENC2E_PROFILE_ALLOCATION)
@@ -131,7 +137,6 @@ SET(OPENC2E_SDL
 	src/backends/SDLBackend.cpp
 )
 
-
 SET(OPENC2E_QT
 	src/backends/qtgui/qtopenc2e.cpp
 	src/backends/qtgui/openc2eview.cpp
@@ -162,46 +167,6 @@ SET(OPENC2E_QT_UIS
 	src/backends/qtgui/agents.ui)
 # 
 
-
-cmake_minimum_required(VERSION 2.4.0)
-INCLUDE(TestBigEndian)
-INCLUDE(CheckIncludeFile)
-TEST_BIG_ENDIAN(BIG_ENDIAN)
-IF(BIG_ENDIAN)
-	ADD_DEFINITIONS("-DOC2E_BIG_ENDIAN=1")
-	CHECK_INCLUDE_FILE(byteswap.h HAVE_BYTESWAP_H)
-	IF(HAVE_BYTESWAP_H)
-		ADD_DEFINITIONS("-DHAVE_BYTESWAP_H=1")
-	ELSE(HAVE_BYTESWAP_H)
-		ADD_DEFINITIONS("-DHAVE_BYTESWAP_H=0")
-	ENDIF(HAVE_BYTESWAP_H)
-ELSE(BIG_ENDIAN)
-	ADD_DEFINITIONS("-DOC2E_BIG_ENDIAN=0")
-ENDIF(BIG_ENDIAN)
-CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
-IF(HAVE_STDINT_H)
-	ADD_DEFINITIONS("-DHAVE_STDINT_H=1")
-ELSE(HAVE_STDINT_H)
-ENDIF(HAVE_STDINT_H)
-
-set(SDL2_INCLUDE_DIR "C:/SDL2-2.0.10/include")
-set(SDL2_LIBRARY "C:/SDL2-2.0.10/lib")
-set(SDL2_MIXER_DIR "C:/SDL2_mixer-2.0.4")
-set(SDL2_NET_DIR "C:/SDL2_net-2.0.1")
-set(SDL2_GFX_DIR "C:/SDL2_gfx-1.0.1")
-set(SDL2_TTF_DIR "C:/SDL2_ttf-2.0.15")
-
-IF(OPENC2E_USE_OPENAL MATCHES "^(YES|AUTO)$")
-	FIND_PACKAGE(OpenAL)
-ELSE(OPENC2E_USE_OPENAL MATCHES "^(YES|AUTO)$")
-	SET(OPENAL_FOUND "NO")
-ENDIF(OPENC2E_USE_OPENAL MATCHES "^(YES|AUTO)$")
-FIND_PACKAGE(ALUT)
-
-set(Zlib_DIR "C:/zlib")
-set(BOOST_ROOT "C:/local/boost_1_72_0")
-set(BOOST_LIBRARYDIR "C:/local/boost_1_72_0/lib32")
-
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_net REQUIRED)
@@ -209,72 +174,36 @@ find_package(SDL2_gfx REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(ZLIB REQUIRED)
 
-FIND_PACKAGE(Boost 1.46.0 COMPONENTS program_options filesystem thread regex serialization REQUIRED)
-FIND_LIBRARY(BOOST_SYSTEM_LIBRARY NAMES boost_system)
+find_package(Qt5 COMPONENTS Widgets Core Gui REQUIRED)
 
-IF(OPENC2E_USE_QT)
-	find_package(Qt4 4.4.3 REQUIRED QtGui QtXml)
-ENDIF(OPENC2E_USE_QT)
+# find_package(Qt4 REQUIRED)
+# include(${QT_USE_FILE})
+# add_definitions(${QT_DEFINITIONS})
+# include_directories(${CMAKE_BINARY_DIR})
 
-SET(USE_OPENAL "NO")
+# SET(SAVED_CMAKE_CURRENT_BINARY_DIR CMAKE_CURRENT_BINARY_DIR)
+# SET(CMAKE_CURRENT_BINARY_DIR ${GEN})
+# QT4_WRAP_UI(OPENC2E_QT_UIS_H ${OPENC2E_QT_UIS})
+# QT4_WRAP_CPP(OPENC2E_QT_MOC_SRCS ${OPENC2E_QT_MOC_HDRS})
+# SET(CMAKE_CURRENT_BINARY_DIR SAVED_CMAKE_CURRENT_BINARY_DIR)
+SET(QT_DEF "-DQT_SUPPORT")
 
-IF(OPENAL_FOUND)
-    IF(ALUT_FOUND)
-        SET(USE_OPENAL "YES")
-    ENDIF(ALUT_FOUND)
-ENDIF(OPENAL_FOUND)
-     
-IF(USE_OPENAL STREQUAL "NO")
-	IF (OPENC2E_USE_OPENAL MATCHES "^YES")
-		MESSAGE(FATAL_ERROR "OpenAL not found.")
-	ENDIF (OPENC2E_USE_OPENAL MATCHES "^YES")
-	
-    SET(ALUT_INCLUDE_DIR "")
-    SET(OPENAL_INCLUDE_DIR "")
-    SET(ALUT_LIBRARY "")
-    SET(OPENAL_LIBRARY "")
-    SET(OPENAL_SRC "")
-    SET(OPENAL_DEF "")
-ELSE(USE_OPENAL STREQUAL "NO")
-    SET(OPENAL_SRC "src/backends/OpenALBackend.cpp")
-    SET(OPENAL_DEF "-DOPENAL_SUPPORT")
-ENDIF(USE_OPENAL STREQUAL "NO")
+find_package(Boost 1.46.0 COMPONENTS program_options filesystem thread regex serialization system REQUIRED)
 
-IF(SDLMIXER_FOUND)
-    SET(SDLMIXER_SRC "src/backends/SDLMixerBackend.cpp")
-    SET(SDLMIXER_DEF "-DSDLMIXER_SUPPORT")
-ELSE(SDLMIXER_FOUND)
-    SET(SDLMIXER_INCLUDE_DIR "")
-    SET(SDLMIXER_LIBRARY "")
-    SET(SDLMIXER_SRC "")
-    SET(SDLMIXER_DEF "")
-ENDIF(SDLMIXER_FOUND)
+# Forced SDL_mixer, simple == better.
+SET(SDLMIXER_SRC "src/backends/SDLMixerBackend.cpp")
+SET(SDLMIXER_DEF "-DSDLMIXER_SUPPORT")
 
-IF(OPENC2E_USE_QT)
-	include(${QT_USE_FILE})
-	SET(SAVED_CMAKE_CURRENT_BINARY_DIR CMAKE_CURRENT_BINARY_DIR)
-	SET(CMAKE_CURRENT_BINARY_DIR ${GEN})
-	QT4_WRAP_UI(OPENC2E_QT_UIS_H ${OPENC2E_QT_UIS})
-	QT4_WRAP_CPP(OPENC2E_QT_MOC_SRCS ${OPENC2E_QT_MOC_HDRS})
-	SET(CMAKE_CURRENT_BINARY_DIR SAVED_CMAKE_CURRENT_BINARY_DIR)
-	SET(QT_DEF "-DQT_SUPPORT")
-ENDIF(OPENC2E_USE_QT)
-
-set_target_properties(${executable} PROPERTIES
-	CXX_STANDARD 17
-)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Pass flags to the compiler
-ADD_DEFINITIONS("-W -pedantic -D_REENTRANT -DYYERROR_VERBOSE ${OPENAL_DEF} ${QT_DEF} ${SDLMIXER_DEF}")
+ADD_DEFINITIONS("-W -D_REENTRANT -DYYERROR_VERBOSE ${QT_DEF} ${SDLMIXER_DEF}")
 
-IF(OPENC2E_USE_QT)
-	SET(FRONTEND_SRCS ${OPENC2E_SDL} ${OPENC2E_QT} ${OPENC2E_QT_UIS_H} ${OPENC2E_QT_MOC_SRCS})
-	SET(FRONTEND_LIBS Qt4::QtGui Qt4::QtXml)
-ELSE(OPENC2E_USE_QT)
-SET(FRONTEND_SRCS ${OPENC2E_SDL})
-	SET(FRONTEND_LIBS)
-ENDIF(OPENC2E_USE_QT)
-ADD_EXECUTABLE(openc2e ${OPENC2E_CORE} ${FRONTEND_SRCS} ${OPENAL_SRC} ${SDLMIXER_SRC} ${SER_SRCS})
+SET(FRONTEND_SRCS ${OPENC2E_SDL} ${OPENC2E_QT} ${OPENC2E_QT_UIS} ${OPENC2E_QT_MOC_HDRS})
+# SET(FRONTEND_SRCS ${OPENC2E_SDL} ${OPENC2E_QT} ${OPENC2E_QT_UIS_H} ${OPENC2E_QT_MOC_SRCS})
+
+ADD_EXECUTABLE(openc2e ${OPENC2E_CORE} ${FRONTEND_SRCS} ${SDLMIXER_SRC} ${SER_SRCS})
 
 TARGET_LINK_LIBRARIES(
 	openc2e
@@ -285,108 +214,102 @@ TARGET_LINK_LIBRARIES(
 	SDL2_gfx
 	SDL2_mixer
 	${ZLIB_LIBRARIES}
-	${OPENAL_LIBRARY}
-	${ALUT_LIBRARY}
 	${FRONTEND_LIBS}
 	ws2_32
 	Boost::program_options
 	Boost::filesystem
+	Boost::system
 	Boost::thread
 	Boost::regex
 	Boost::serialization
+	# ${QT_LIBRARIES}
+	Qt5::Core
+	Qt5::Gui
+	Qt5::Widgets
 )
-IF(BOOST_SYSTEM_LIBRARY)
-TARGET_LINK_LIBRARIES(openc2e boost_system)
-ENDIF(BOOST_SYSTEM_LIBRARY)
-
-LINK_DIRECTORIES(${Boost_LIBRARY})
 
 INCLUDE_DIRECTORIES(BEFORE
 	${GEN}
 	${SRC}/src
-	${SDL2_INCLUDE_DIR}
-	${SDL2_NET_DIR}/include
-	${SDL2_TTF_DIR}/include
-	${SDL2_GFX_DIR}
-	${SDL2_MIXER_DIR}/include
-	${OPENAL_INCLUDE_DIR}
-	${ALUT_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIR}
 )
 
 FILE(GLOB CAOSVM_FILES ${SRC}/src/caos/caosVM_*.cpp)
 
-if(LINUX OR MINGW)
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/commandinfo.yml
-	COMMAND perl parsedocs.pl ${CAOSVM_FILES} > ${GEN}/commandinfo.yml
-	DEPENDS parsedocs.pl ${CAOSVM_FILES}
-	WORKING_DIRECTORY ${SRC})
+if(LINUX OR MINGW OR APPLE)
+        if (LINUX OR APPLE)
+            ADD_CUSTOM_COMMAND(
+                    OUTPUT ${GEN}/commandinfo.yml
+                    COMMAND perl parsedocs.pl ${CAOSVM_FILES} > ${GEN}/commandinfo.yml
+                    DEPENDS parsedocs.pl ${CAOSVM_FILES}
+                    WORKING_DIRECTORY ${SRC})
 
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${BIN}/caosdocs.html
-	COMMAND perl docs/writehtml.pl ${GEN}/commandinfo.yml > ${BIN}/caosdocs.html
-	DEPENDS docs/writehtml.pl ${GEN}/commandinfo.yml
-	WORKING_DIRECTORY ${SRC})
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${BIN}/docs.css
-	COMMAND cp docs/docs.css ${BIN}/docs.css
-	DEPENDS docs/docs.css
-	WORKING_DIRECTORY ${SRC})
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${BIN}/openc2e.6
-	COMMAND pod2man --center="Openc2e Documentation" --section=6 ${SRC}/docs/openc2e.pod ${BIN}/openc2e.6
-	DEPENDS docs/openc2e.pod
+            ADD_CUSTOM_COMMAND(
+                    OUTPUT ${BIN}/caosdocs.html
+                    COMMAND perl docs/writehtml.pl ${GEN}/commandinfo.yml > ${BIN}/caosdocs.html
+                    DEPENDS docs/writehtml.pl ${GEN}/commandinfo.yml
+                    WORKING_DIRECTORY ${SRC})
+            ADD_CUSTOM_COMMAND(
+                    OUTPUT ${BIN}/docs.css
+                    COMMAND cp docs/docs.css ${BIN}/docs.css
+                    DEPENDS docs/docs.css
+                    WORKING_DIRECTORY ${SRC})
+            ADD_CUSTOM_COMMAND(
+		OUTPUT ${BIN}/openc2e.6
+		COMMAND pod2man --center="Openc2e Documentation" --section=6 ${SRC}/docs/openc2e.pod ${BIN}/openc2e.6
+		DEPENDS docs/openc2e.pod
+            )
+            ADD_CUSTOM_TARGET(docs ALL DEPENDS ${BIN}/caosdocs.html ${BIN}/docs.css ${BIN}/openc2e.6)
+        endif(LINUX OR APPLE)
+	# it seems these ADD_CUSTOM_COMMANDS for flex and bison could be made
+	# into a macro... e.g. FLEX(file1) FLEX(file2) etc...
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${GEN}/cataloglexer.cpp
+		COMMAND re2c -o ${GEN}/cataloglexer.cpp ${SRC}/src/cataloglexer.re2c
+		DEPENDS ${SRC}/src/cataloglexer.re2c
+		WORKING_DIRECTORY ${SRC})
+
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${GEN}/catalogue.tab.cpp ${GEN}/catalogue.tab.hpp
+		COMMAND bison -d --name-prefix=cata --file-prefix="${GEN}/catalogue" src/catalogue.ypp
+		DEPENDS src/catalogue.ypp
+		WORKING_DIRECTORY ${SRC})
+
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${GEN}/cmddata.cpp
+		COMMAND perl writecmds.pl ${GEN}/commandinfo.yml > ${GEN}/cmddata.cpp
+		DEPENDS ${GEN}/commandinfo.yml writecmds.pl
+		WORKING_DIRECTORY ${SRC})
+
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${GEN}/caoslexer.cpp
+		COMMAND re2c -o ${GEN}/caoslexer.cpp ${SRC}/src/caoslexer.re2c
+		DEPENDS ${SRC}/src/caoslexer.re2c
+		WORKING_DIRECTORY ${SRC})
+
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${GEN}/mnglexer.cpp
+		COMMAND re2c -o ${GEN}/mnglexer.cpp ${SRC}/src/music/mnglexer.re2c
+		DEPENDS ${SRC}/src/music/mnglexer.re2c
+		WORKING_DIRECTORY ${SRC})
+
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${GEN}/mngparser.tab.cpp ${GEN}/mngparser.tab.hpp
+		COMMAND bison -d --name-prefix=mng --file-prefix="${GEN}/mngparser" src/music/mngparser.ypp
+		DEPENDS src/music/mngparser.ypp
+		WORKING_DIRECTORY ${SRC})
+
+        ADD_CUSTOM_TARGET(test DEPENDS openc2e COMMAND perl ${SRC}/runtests.pl ${SRC}/tests)
+
+	ADD_CUSTOM_TARGET(generated DEPENDS
+		${GEN}/catalogue.tab.cpp ${GEN}/catalogue.tab.hpp
+		${GEN}/caoslexer.cpp
+		${GEN}/mngparser.tab.cpp ${GEN}/mngparser.tab.hpp
+		${GEN}/mnglexer.cpp
+		${GEN}/cataloglexer.cpp
+		${GEN}/cmddata.cpp
 	)
-# it seems these ADD_CUSTOM_COMMANDS for flex and bison could be made
-# into a macro... e.g. FLEX(file1) FLEX(file2) etc...
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/cataloglexer.cpp
-	COMMAND re2c -o ${GEN}/cataloglexer.cpp ${SRC}/src/cataloglexer.re2c
-	DEPENDS ${SRC}/src/cataloglexer.re2c
-	WORKING_DIRECTORY ${SRC})
-
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/catalogue.tab.cpp ${GEN}/catalogue.tab.hpp
-	COMMAND bison -d --name-prefix=cata --file-prefix="${GEN}/catalogue" src/catalogue.ypp
-	DEPENDS src/catalogue.ypp
-	WORKING_DIRECTORY ${SRC})
-
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/cmddata.cpp
-	COMMAND perl writecmds.pl ${GEN}/commandinfo.yml > ${GEN}/cmddata.cpp
-	DEPENDS ${GEN}/commandinfo.yml writecmds.pl
-	WORKING_DIRECTORY ${SRC})
-
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/caoslexer.cpp
-	COMMAND re2c -o ${GEN}/caoslexer.cpp ${SRC}/src/caoslexer.re2c
-	DEPENDS ${SRC}/src/caoslexer.re2c
-	WORKING_DIRECTORY ${SRC})
-
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/mnglexer.cpp
-	COMMAND re2c -o ${GEN}/mnglexer.cpp ${SRC}/src/music/mnglexer.re2c
-	DEPENDS ${SRC}/src/music/mnglexer.re2c
-	WORKING_DIRECTORY ${SRC})
-
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${GEN}/mngparser.tab.cpp ${GEN}/mngparser.tab.hpp
-	COMMAND bison -d --name-prefix=mng --file-prefix="${GEN}/mngparser" src/music/mngparser.ypp
-	DEPENDS src/music/mngparser.ypp
-	WORKING_DIRECTORY ${SRC})
-
-ADD_CUSTOM_TARGET(test DEPENDS openc2e
-	COMMAND perl ${SRC}/runtests.pl ${SRC}/tests)
-ADD_CUSTOM_TARGET(docs ALL DEPENDS ${BIN}/caosdocs.html ${BIN}/docs.css ${BIN}/openc2e.6)
-ADD_CUSTOM_TARGET(generated DEPENDS
-	${GEN}/catalogue.tab.cpp ${GEN}/catalogue.tab.hpp
-	${GEN}/caoslexer.cpp
-	${GEN}/mngparser.tab.cpp ${GEN}/mngparser.tab.hpp
-	${GEN}/mnglexer.cpp
-	${GEN}/cataloglexer.cpp
-	${GEN}/cmddata.cpp
-)
-endif(LINUX OR MINGW)
+else(LINUX OR MINGW OR APPLE)
+	message(ERROR "This platform is currently not supported.")
+endif(LINUX OR MINGW OR APPLE)
 

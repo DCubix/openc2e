@@ -3,7 +3,7 @@
 #include "../../creatures/c2eBrain.h"
 #include "../../creatures/oldBrain.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include "brainview.h"
 #include <boost/format.hpp>
 
@@ -16,7 +16,7 @@ BrainView::BrainView() {
 
 	setAutoFillBackground(true);
 	QPalette pal(palette());
-	pal.setColor(QPalette::Background, QColor(0, 0, 0));
+	pal.setColor(QPalette::Window, QColor(0, 0, 0));
 	setPalette(pal);
 }
 
